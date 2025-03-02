@@ -11,7 +11,7 @@ class BlogController extends Controller
     function index(Request $request)
     {
         $title = $request->title;
-        $blogs = DB::table('blogs')->where('title', 'like', '%' . $title . '%')->orderBy('id', 'desc')->paginate(10);
+        $blogs = Blog::where('title', 'like', '%' . $title . '%')->orderBy('id', 'desc')->paginate(10);
 
         return view('blog', ['blogs' => $blogs, 'title' => $title]);
     }
@@ -28,11 +28,9 @@ class BlogController extends Controller
             'description' => 'required',
         ]);
 
-        DB::table('blogs')->insert([
+        Blog::create([
             'title' => $request->title,
-            'description' => $request->description,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'description' => $request->description
         ]);
 
         $request->session()->flash('success', 'Blog Berhasil Ditambahkan.');
@@ -42,19 +40,15 @@ class BlogController extends Controller
 
     public function show(string $id)
     {
-        $blog = DB::table('blogs')->where('id', $id)->first();
-        if (!$blog) {
-            abort(404);
-        }
+        $blog = Blog::findOrFail($id);
+
         return view('blog-detail', ['blog' => $blog]);
     }
 
     public function edit(string $id)
     {
-        $blog = DB::table('blogs')->where('id', $id)->first();
-        if (!$blog) {
-            abort(404);
-        }
+        $blog = Blog::findOrFail($id);
+
         return view('blog-edit', ['blog' => $blog]);
     }
 
@@ -65,7 +59,7 @@ class BlogController extends Controller
             'description' => 'required',
         ]);
 
-        DB::table('blogs')->where('id', $id)->update([
+        Blog::findOrFail($id)->update([
             'title' => $request->title,
             'description' => $request->description,
         ]);
@@ -77,8 +71,17 @@ class BlogController extends Controller
 
     public function destroy(Request $request, string $id)
     {
-        DB::table('blogs')->where('id', $id)->delete();
+        Blog::findOrFail($id)->delete();
+
         $request->session()->flash('success', 'Blog Berhasil Dihapus.');
+
+        return redirect()->route('blog');
+    }
+
+    public function restore(string $id)
+    {
+        Blog::withTrashed()->findOrFail($id)->restore();
+
         return redirect()->route('blog');
     }
 }

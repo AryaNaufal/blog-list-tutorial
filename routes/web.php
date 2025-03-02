@@ -15,4 +15,5 @@ Route::prefix('blog')->group(function () {
     Route::get('/edit/{id}', [BlogController::class, 'edit']);
     Route::patch('/update/{id}', [BlogController::class, 'update']);
     Route::get('/delete/{id}', [BlogController::class, 'destroy']);
+    Route::get('/restore/{id}', [BlogController::class, 'restore']);
 });
